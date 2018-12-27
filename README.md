@@ -5,7 +5,7 @@ Mqttconnector allows to transport api of piGarden and piGuardian through mqtt me
 
 ## Official documentation 
 
-Offical documentation of mqttconnector can be found on the [https://www.lejubila.net/2018/11/mqttconnector-ut…ian-tramite-mqtt/](https://www.lejubila.net/2018/11/mqttconnector-ut…ian-tramite-mqtt/)
+Offical documentation of mqttconnector can be found on the [https://www.lejubila.net/2018/12/mqttconnector-utilizza-le-api-pigarden-e-piguardian-tramite-mqtt/](https://www.lejubila.net/2018/12/mqttconnector-utilizza-le-api-pigarden-e-piguardian-tramite-mqtt/)
 
 ## License
 
