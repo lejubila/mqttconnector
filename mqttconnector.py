@@ -13,6 +13,7 @@ import paho.mqtt.client as mqttClient
 import time
 import subprocess
 import configparser
+import calendar
 
 def on_connect(client, userdata, flags, rc):
 
@@ -35,8 +36,20 @@ def on_connect(client, userdata, flags, rc):
            client.subscribe(topic)
            print "subscribe: "+topic
 
+           if len(piguardian_perimetral) > 0:
+              for topic, item in piguardian_perimetral.items():
+                  client.subscribe(topic)
+                  print "subscribe: "+topic
 
+           if len(piguardian_pir) > 0:
+              for topic, item in piguardian_pir.items():
+                  client.subscribe(topic)
+                  print "subscribe: "+topic
 
+           if len(piguardian_tamper) > 0:
+              for topic, item in piguardian_tamper.items():
+                  client.subscribe(topic)
+                  print "subscribe: "+topic
 
 
     else:
@@ -93,6 +106,58 @@ def on_message(client, userdata, message):
 	if piguardian_result_enable== 1:
 	    client.publish(piguardian_topic+"/"+subtopic_result, output, piguardian_topic_result_qos, piguardian_topic_result_retain)
 
+    if len(piguardian_perimetral) > 0:
+        for topic, item in piguardian_perimetral.items():
+            payload = ""
+            if message.topic == topic and message.payload == item["normal"]:
+                payload = "perimetral_set_mqttstatus "+item["sensor"]+" 0"
+            elif message.topic == topic and message.payload == item["alert"]:
+                payload = "perimetral_set_mqttstatus "+item["sensor"]+" 1"
+                #payload = "perimetral_set_mqttstatus "+item["sensor"]+" "+str(calendar.timegm(time.gmtime()))
+               
+            if payload != "":
+	        client.publish(piguardian_topic+"/"+subtopic_command, payload, piguardian_topic_result_qos, piguardian_topic_result_retain)
+
+    '''
+    if len(piguardian_pir) > 0:
+        for topic, item in piguardian_pir.items():
+            payload = ""
+            if message.topic == topic and message.payload == item["normal"]:
+                payload = "pir_set_mqttstatus "+item["sensor"]+" 0"
+            elif message.topic == topic and message.payload == item["alert"]:
+                payload = "pir_set_mqttstatus "+item["sensor"]+" 1"
+                #payload = "pir_set_mqttstatus "+item["sensor"]+" "+str(calendar.timegm(time.gmtime()))
+               
+            if payload != "":
+	        client.publish(piguardian_topic+"/"+subtopic_command, payload, piguardian_topic_result_qos, piguardian_topic_result_retain)
+
+    if len(piguardian_tamper) > 0:
+        for topic, item in piguardian_tamper.items():
+            payload = ""
+            if message.topic == topic and message.payload == item["normal"]:
+                payload = "tamper_set_mqttstatus "+item["sensor"]+" 0"
+            elif message.topic == topic and message.payload == item["alert"]:
+                payload = "tamper_set_mqttstatus "+item["sensor"]+" 1"
+                #payload = "tamper_set_mqttstatus "+item["sensor"]+" "+str(calendar.timegm(time.gmtime()))
+               
+            if payload != "":
+	        client.publish(piguardian_topic+"/"+subtopic_command, payload, piguardian_topic_result_qos, piguardian_topic_result_retain)
+    '''
+
+
+
+
+def timestamp(self):
+    "Return POSIX timestamp as float"
+    if self._tzinfo is None:
+        s = self._mktime()
+        return s + self.microsecond / 1e6
+    else:
+        return (self - _EPOCH).total_seconds()
+
+
+
+
 
 config = configparser.ConfigParser()
 config.read('/etc/mqttconnector.ini')
@@ -133,11 +198,55 @@ piguardian_result_enable = int(config['piguardian']['result_enable'])
 piguardian_topic_result_qos = int(config['piguardian']['topic_result_qos'])
 piguardian_topic_result_retain = int(config['piguardian']['topic_result_retain'])
 
+piguardian_perimetral_mqtt_sensor = config['piguardian']['perimetral_mqtt_sensor']
+piguardian_pir_mqtt_sensor = config['piguardian']['pir_mqtt_sensor']
+piguardian_tamper_mqtt_sensor = config['piguardian']['tamper_mqtt_sensor']
+
+piguardian_perimetral = dict()
+if piguardian_perimetral_mqtt_sensor:
+    items = piguardian_perimetral_mqtt_sensor.split("\n")
+    for item in items:
+	item_data = item.split(";")
+        piguardian_perimetral[item_data[1]] = dict()
+        piguardian_perimetral[item_data[1]]['sensor'] = item_data[0]
+        piguardian_perimetral[item_data[1]]['normal'] = item_data[2]
+        piguardian_perimetral[item_data[1]]['alert'] = item_data[3]
+
+piguardian_pir = dict()
+if piguardian_pir_mqtt_sensor:
+    items = piguardian_pir_mqtt_sensor.split("\n")
+    for item in items:
+	item_data = item.split(";")
+        piguardian_pir[item_data[1]] = dict()
+        piguardian_pir[item_data[1]]['sensor'] = item_data[0]
+        piguardian_pir[item_data[1]]['normal'] = item_data[2]
+        piguardian_pir[item_data[1]]['alert'] = item_data[3]
+
+piguardian_tamper = dict()
+if piguardian_tamper_mqtt_sensor:
+    items = piguardian_tamper_mqtt_sensor.split("\n")
+    for item in items:
+	item_data = item.split(";")
+        piguardian_tamper[item_data[1]] = dict()
+        piguardian_tamper[item_data[1]]['sensor'] = item_data[0]
+        piguardian_tamper[item_data[1]]['normal'] = item_data[2]
+        piguardian_tamper[item_data[1]]['alert'] = item_data[3]
+
+
+print piguardian_perimetral
+print piguardian_pir
+print piguardian_tamper
+
+
 client = mqttClient.Client(client_id)              # create new instance
 client.username_pw_set(user, password=password)    # set username and password
 client.on_connect = on_connect                      # attach function to callback
 client.on_message = on_message                      # attach function to callback
 client.on_disconnect = on_disconnect
+
+
+
+
 
 print broker_address, port, user, password
 

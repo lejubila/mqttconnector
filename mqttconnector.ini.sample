@@ -31,3 +31,8 @@ result_enable=0
 topic=piguardian
 topic_result_qos=0
 topic_result_retain=1
+
+perimetral_mqtt_sensor=
+pir_mqtt_sensor=
+tamper_mqtt_sensor=
+
