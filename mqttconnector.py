@@ -118,7 +118,6 @@ def on_message(client, userdata, message):
             if payload != "":
 	        client.publish(piguardian_topic+"/"+subtopic_command, payload, piguardian_topic_result_qos, piguardian_topic_result_retain)
 
-    '''
     if len(piguardian_pir) > 0:
         for topic, item in piguardian_pir.items():
             payload = ""
@@ -142,7 +141,6 @@ def on_message(client, userdata, message):
                
             if payload != "":
 	        client.publish(piguardian_topic+"/"+subtopic_command, payload, piguardian_topic_result_qos, piguardian_topic_result_retain)
-    '''
 
 
 
