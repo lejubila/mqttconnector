@@ -14,6 +14,8 @@ import time
 import subprocess
 import configparser
 import calendar
+import json
+import sys
 
 def on_connect(client, userdata, flags, rc):
 
@@ -30,6 +32,11 @@ def on_connect(client, userdata, flags, rc):
            topic = pigarden_topic+"/"+subtopic_command
            client.subscribe(topic)
            print "subscribe: "+topic
+
+           if len(pigarden_ble_bridge) > 0:
+              for topic, item in pigarden_ble_bridge.items():
+                  client.subscribe(topic)
+                  print "subscribe: "+topic
 
         if piguardian_enabled == "1":
            topic = piguardian_topic+"/"+subtopic_command
@@ -84,6 +91,100 @@ def on_message(client, userdata, message):
 
 	if pigarden_result_enable== 1:
 	    client.publish(pigarden_topic+"/"+subtopic_result, output, pigarden_topic_result_qos, pigarden_topic_result_retain)
+
+
+    if len(pigarden_ble_bridge) > 0:
+        for topic, item in pigarden_ble_bridge.items():
+            payload = ""
+            if message.topic == topic:
+                try:
+                    json_payload = json.loads(message.payload)
+                    print "pigarden_ble_bridge: ", json_payload
+
+                    if json_payload.has_key(item['sensor_name']):
+
+                        # Valuta l'umidita'
+                        if json_payload[item['sensor_name']].has_key(item['moisture_name']) and (
+                            type(json_payload[item['sensor_name']][item['moisture_name']]) == int or 
+                            type(json_payload[item['sensor_name']][item['moisture_name']]) == float
+                        ):
+                            cmd = "sensor_status_set " + item['alias'] + " moisture " + str(json_payload[item['sensor_name']][item['moisture_name']])
+                            if pigarden_user != "" and pigarden_pwd != "":
+                                cmd = pigarden_user + '\n' + pigarden_pwd + '\n' + cmd 
+        
+                            p = subprocess.Popen([ path_connector + pigarden_exec_command, cmd, pigarden_host, pigarden_port ], stdout=subprocess.PIPE)
+                            (output, err) = p.communicate()
+        
+                            ## Wait for date to terminate. Get return returncode ##
+                            p_status = p.wait()
+                            print "Command : '" + cmd + "'"
+                            print "Command output : ", output
+                            print "Command exit status/return code : ", p_status
+
+                        # Valuta la temperatura
+                        if json_payload[item['sensor_name']].has_key(item['temperature_name']) and (
+                            type(json_payload[item['sensor_name']][item['temperature_name']]) == int or 
+                            type(json_payload[item['sensor_name']][item['temperature_name']]) == float
+                        ):
+                            cmd = "sensor_status_set " + item['alias'] + " temperature " + str(json_payload[item['sensor_name']][item['temperature_name']])
+                            if pigarden_user != "" and pigarden_pwd != "":
+                                cmd = pigarden_user + '\n' + pigarden_pwd + '\n' + cmd 
+        
+                            p = subprocess.Popen([ path_connector + pigarden_exec_command, cmd, pigarden_host, pigarden_port ], stdout=subprocess.PIPE)
+                            (output, err) = p.communicate()
+        
+                            ## Wait for date to terminate. Get return returncode ##
+                            p_status = p.wait()
+                            print "Command : '" + cmd + "'"
+                            print "Command output : ", output
+                            print "Command exit status/return code : ", p_status
+
+                        # Valuta la illuminazione
+                        if json_payload[item['sensor_name']].has_key(item['illuminance_name']) and (
+                            type(json_payload[item['sensor_name']][item['illuminance_name']]) == int or 
+                            type(json_payload[item['sensor_name']][item['illuminance_name']]) == float
+                        ):
+                            cmd = "sensor_status_set " + item['alias'] + " illuminance " + str(json_payload[item['sensor_name']][item['illuminance_name']])
+                            if pigarden_user != "" and pigarden_pwd != "":
+                                cmd = pigarden_user + '\n' + pigarden_pwd + '\n' + cmd 
+        
+                            p = subprocess.Popen([ path_connector + pigarden_exec_command, cmd, pigarden_host, pigarden_port ], stdout=subprocess.PIPE)
+                            (output, err) = p.communicate()
+        
+                            ## Wait for date to terminate. Get return returncode ##
+                            p_status = p.wait()
+                            print "Command : '" + cmd + "'"
+                            print "Command output : ", output
+                            print "Command exit status/return code : ", p_status
+
+                        # Valuta la fertilita'
+                        if json_payload[item['sensor_name']].has_key(item['fertility_name']) and (
+                            type(json_payload[item['sensor_name']][item['fertility_name']]) == int or 
+                            type(json_payload[item['sensor_name']][item['fertility_name']]) == float
+                        ):
+                            cmd = "sensor_status_set " + item['alias'] + " fertility " + str(json_payload[item['sensor_name']][item['fertility_name']])
+                            if pigarden_user != "" and pigarden_pwd != "":
+                                cmd = pigarden_user + '\n' + pigarden_pwd + '\n' + cmd 
+        
+                            p = subprocess.Popen([ path_connector + pigarden_exec_command, cmd, pigarden_host, pigarden_port ], stdout=subprocess.PIPE)
+                            (output, err) = p.communicate()
+        
+                            ## Wait for date to terminate. Get return returncode ##
+                            p_status = p.wait()
+                            print "Command : '" + cmd + "'"
+                            print "Command output : ", output
+                            print "Command exit status/return code : ", p_status
+
+                except Exception as e:
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    print "Error into pigarden_ble_bridge. Exception type:", exc_type, " --- line number: ", exc_tb.tb_lineno
+                    print "Message.payload: ", message.payload
+                    print ""
+
+		print ""
+
+
+
 
 
     if message.topic == (piguardian_topic+"/"+subtopic_command):
@@ -183,6 +284,24 @@ pigarden_topic = config['pigarden']['topic']
 pigarden_result_enable = int(config['pigarden']['result_enable'])
 pigarden_topic_result_qos = int(config['pigarden']['topic_result_qos'])
 pigarden_topic_result_retain = int(config['pigarden']['topic_result_retain'])
+
+#ble_bridge_mqtt_sensor= Mi_Flora;tele/ble_bridge/SENSOR;Flora6c7723;Moisture;Temperature;Illuminance;Fertility
+pigarden_ble_bridge_mqtt_sensor = config['pigarden']['ble_bridge_mqtt_sensor']
+
+pigarden_ble_bridge = dict()
+if pigarden_ble_bridge_mqtt_sensor:
+    items = pigarden_ble_bridge_mqtt_sensor.split("\n")
+    for item in items:
+ 	item_data = item.split(";")
+        pigarden_ble_bridge[item_data[1]] = dict()
+        pigarden_ble_bridge[item_data[1]]['alias'] = item_data[0]
+        pigarden_ble_bridge[item_data[1]]['sensor_name'] = item_data[2]
+        pigarden_ble_bridge[item_data[1]]['moisture_name'] = item_data[3]
+        pigarden_ble_bridge[item_data[1]]['temperature_name'] = item_data[4]
+        pigarden_ble_bridge[item_data[1]]['illuminance_name'] = item_data[5]
+        pigarden_ble_bridge[item_data[1]]['fertility_name'] = item_data[6]
+
+print pigarden_ble_bridge
 
 piguardian_enabled = config['piguardian']['enabled']
 #piguardian_path = config['piguardian']['path']
