@@ -1,3 +1,6 @@
+## 0.0.3a - 03/10/2021
+- Fix bug for multiple piGarden sensor
+
 ## 0.0.3 - 03/10/2021
 - Add support for piGarden moisture, temperature, fertility and illuminance sensor (Mi Flora)
 

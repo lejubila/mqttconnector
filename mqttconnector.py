@@ -34,8 +34,9 @@ def on_connect(client, userdata, flags, rc):
            print "subscribe: "+topic
 
            if len(pigarden_ble_bridge) > 0:
-              for topic, item in pigarden_ble_bridge.items():
-                  client.subscribe(topic)
+              for ble_sensor_alias, item in pigarden_ble_bridge.items():
+                  topic = item['topic']
+                  client.subscribe(item['topic'])
                   print "subscribe: "+topic
 
         if piguardian_enabled == "1":
@@ -94,7 +95,8 @@ def on_message(client, userdata, message):
 
 
     if len(pigarden_ble_bridge) > 0:
-        for topic, item in pigarden_ble_bridge.items():
+        for ble_sensor_alias, item in pigarden_ble_bridge.items():
+            topic = item['topic']
             payload = ""
             if message.topic == topic:
                 try:
@@ -293,13 +295,14 @@ if pigarden_ble_bridge_mqtt_sensor:
     items = pigarden_ble_bridge_mqtt_sensor.split("\n")
     for item in items:
  	item_data = item.split(";")
-        pigarden_ble_bridge[item_data[1]] = dict()
-        pigarden_ble_bridge[item_data[1]]['alias'] = item_data[0]
-        pigarden_ble_bridge[item_data[1]]['sensor_name'] = item_data[2]
-        pigarden_ble_bridge[item_data[1]]['moisture_name'] = item_data[3]
-        pigarden_ble_bridge[item_data[1]]['temperature_name'] = item_data[4]
-        pigarden_ble_bridge[item_data[1]]['illuminance_name'] = item_data[5]
-        pigarden_ble_bridge[item_data[1]]['fertility_name'] = item_data[6]
+        pigarden_ble_bridge[item_data[0]] = dict()
+        pigarden_ble_bridge[item_data[0]]['alias'] = item_data[0]
+        pigarden_ble_bridge[item_data[0]]['topic'] = item_data[1]
+        pigarden_ble_bridge[item_data[0]]['sensor_name'] = item_data[2]
+        pigarden_ble_bridge[item_data[0]]['moisture_name'] = item_data[3]
+        pigarden_ble_bridge[item_data[0]]['temperature_name'] = item_data[4]
+        pigarden_ble_bridge[item_data[0]]['illuminance_name'] = item_data[5]
+        pigarden_ble_bridge[item_data[0]]['fertility_name'] = item_data[6]
 
 print pigarden_ble_bridge
 
