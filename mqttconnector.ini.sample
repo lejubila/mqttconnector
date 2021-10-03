@@ -20,6 +20,9 @@ result_enable=0
 topic_result_qos=0
 topic_result_retain=1
 
+ble_bridge_mqtt_sensor= Mi_Flora;tele/ble_bridge/SENSOR;Flora6c7723;Moisture;Temperature;Illuminance;Fertility
+			Mi_Flora2;tele/ble_bridge/SENSOR;Flora6c7853;Moisture;Temperature;Illuminance;Fertility
+
 [piguardian]
 enabled=1
 host=_piguardian_socket_server_hostname_or_ip_addres_
@@ -32,7 +35,11 @@ topic=piguardian
 topic_result_qos=0
 topic_result_retain=1
 
-perimetral_mqtt_sensor=
-pir_mqtt_sensor=
-tamper_mqtt_sensor=
+perimetral_mqtt_sensor= PORTA_PRINCIPALE;stat/guardsensor/POWER1;ON;OFF
+			PORTA_GARAGE;stat/guardsensor/POWER2;ON;OFF
+			PORTA_DI_SERVIZIO;stat/guardsensor/POWER3;ON;OFF
+pir_mqtt_sensor=	CUCINA;stat/guardsensor/POWER4;OFF;ON
+			INGRESSO;stat/guardsensor/POWER5;OFF;ON
+tamper_mqtt_sensor=	CUCINA;stat/guardsensor/POWER4;OFF;ON
+			INGRESSO;stat/guardsensor/POWER5;OFF;ON
 

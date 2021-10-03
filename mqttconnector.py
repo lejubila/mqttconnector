@@ -126,7 +126,7 @@ def on_message(client, userdata, message):
                             type(json_payload[item['sensor_name']][item['temperature_name']]) == int or 
                             type(json_payload[item['sensor_name']][item['temperature_name']]) == float
                         ):
-                            cmd = "sensor_status_set " + item['alias'] + " temoerature " + str(json_payload[item['sensor_name']][item['temperature_name']])
+                            cmd = "sensor_status_set " + item['alias'] + " temperature " + str(json_payload[item['sensor_name']][item['temperature_name']])
                             if pigarden_user != "" and pigarden_pwd != "":
                                 cmd = pigarden_user + '\n' + pigarden_pwd + '\n' + cmd 
         
